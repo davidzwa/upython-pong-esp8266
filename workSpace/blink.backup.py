@@ -35,7 +35,25 @@ print("Connected to DS4_TROPEN (wifi AP now disabled):")
 print(sta_if.ifconfig())
   
 local_addr = sta_if.ifconfig()[0]
-print("My IP:", local_addr)
+print(local_addr)
+        
+server = SlimDNSServer(local_addr, "ocspong")
+# response = server.advertise_hostname("ocspong")
+# server.run_forever()
+host_address_bytes = server.resolve_mdns_address("ocspong")
+print(host_address_bytes)
+
+while (True):
+    read_sockets = [server.sock]
+    r = list(read_sockets)
+    if server.sock in r:
+        server.process_waiting_packets()
+    
+    # server.handle_question()
+
+
+
+
 
 
 
