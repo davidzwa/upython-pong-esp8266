@@ -21,6 +21,7 @@
 __version__ = "0.1.0"
 __author__ = "Nicko van Someren"
 __license__ = "Apache-2.0"
+print(__version__,__author__,__license__)
 
 import sys
 if sys.implementation.name != "micropython":
@@ -286,7 +287,7 @@ class SlimDNSServer:
             buf[o:o+l] = a
             o += l
 
-        # print("Sending packed reply: {}".format(bytes(buf[:o])))
+        print("Sending packed reply: {}".format(bytes(buf[:o])))
 
         # We fake the handling of unicast replies. If the packet came
         # from the mutlicast port we multicast the reply but if it
@@ -366,3 +367,5 @@ def test():
     local_addr = sta_if.ifconfig()[0]
     server = SlimDNSServer(local_addr, "micropython")
     server.run_forever()
+
+

@@ -36,26 +36,23 @@ print(sta_if.ifconfig())
   
 local_addr = sta_if.ifconfig()[0]
 print(local_addr)
-
-if sta_if.isconnected():
-    try:
-        mdns = network.mDNS()
-        mdns.start("mPy","MicroPython with mDNS")
-        _ = mdns.addService('_ftp', '_tcp', 21, "MicroPython", {"board": "ESP32", "service": "mPy FTP File transfer", "passive": "True"})
-        _ = mdns.addService('_telnet', '_tcp', 23, "MicroPython", {"board": "ESP32", "service": "mPy Telnet REPL"})
-        _ = mdns.addService('_http', '_tcp', 80, "MicroPython", {"board": "ESP32", "service": "mPy Web server"})
-    except Exception as e:
-        print("mDNS not started", str(e))
         
-server = SlimDNSServer(local_addr, "micropython")
-response = server.advertise_hostname("servicename")
-server.run_forever()
+server = SlimDNSServer(local_addr, "ocspong")
+# response = server.advertise_hostname("ocspong")
+# server.run_forever()
+host_address_bytes = server.resolve_mdns_address("ocspong")
+print(host_address_bytes)
 
 while (True):
     read_sockets = [server.sock]
     r = list(read_sockets)
     if server.sock in r:
         server.process_waiting_packets()
+    
+    # server.handle_question()
+
+
+
 
 
 
