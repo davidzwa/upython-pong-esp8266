@@ -1,14 +1,14 @@
-
 # blink
 
 import network
 from machine import Pin
 from time import sleep
 from slimDNS import SlimDNSServer
-# from utils import await_connection
-
+from uosc.client import Bundle, Client, create_message
 
 led = Pin(2, Pin.OUT)
+server_ip = "10.0.4.168"
+client_ip = "10.0.4.1"
 
 def await_connection():
     led = Pin(2, Pin.OUT)
@@ -17,7 +17,6 @@ def await_connection():
     sleep(0.1)
     led.off()
     sleep(0.1)
-    # print("Hello world!")
     
 sta_if = network.WLAN(network.STA_IF)
 
@@ -37,5 +36,10 @@ print(sta_if.ifconfig())
 local_addr = sta_if.ifconfig()[0]
 print("My IP:", local_addr)
 
-
-
+msg = "Hallo Jarno"
+osc = Client(local_addr, 9001)
+osc.send('/controls/frobnicator', 42, 3.1419, "spamm")
+b = Bundle()
+b.add(create_message("/foo", msg))
+b.add(create_message("/spamm", 12345))
+osc.send(b)
