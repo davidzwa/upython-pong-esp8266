@@ -5,17 +5,32 @@ received packets.
 """
 import argparse
 import math
+import time
+import pong
 
-from pythonosc import dispatcher
-from pythonosc import osc_server
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
+import asyncio
 
-def print_volume_handler(unused_addr, args, volume):
-  print("[{0}] ~ {1}".format(args[0], volume))
+def filter_handler(address, *args):
+    print(f"{address}: {args}")
 
-def print_compute_handler(unused_addr, args, volume):
-  try:
-    print("[{0}] ~ {1}".format(args[0], args[1](volume)))
-  except ValueError: pass
+async def loop():
+    """Example main loop that only runs for 10 iterations before finishing"""
+    pong.run_game()
+    while 1: 
+      for i in range(10):
+          print(f"Loop {i}")
+          await asyncio.sleep(1)
+
+async def init_main(ip, port, dispatcher):
+  server = AsyncIOOSCUDPServer((ip, port), dispatcher, asyncio.get_event_loop())
+  print("Serving on {}".format(server))
+  transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
+
+  await loop()  # Enter main loop of program
+
+  transport.close()  # Clean up serve endpoint
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -25,12 +40,8 @@ if __name__ == "__main__":
       type=int, default=5005, help="The port to listen on")
   args = parser.parse_args()
 
-  dispatcher = dispatcher.Dispatcher()
-  dispatcher.map("/filter", print)
-  dispatcher.map("/volume", print_volume_handler, "Volume")
-  dispatcher.map("/logvolume", print_compute_handler, "Log volume", math.log)
+  dispatcher = Dispatcher()
+  dispatcher.map("/filter", filter_handler)
 
-  server = osc_server.ThreadingOSCUDPServer(
-      (args.ip, args.port), dispatcher)
-  print("Serving on {}".format(server.server_address))
-  server.serve_forever()
+  asyncio.run(init_main(args.ip, args.port, dispatcher))
+  
